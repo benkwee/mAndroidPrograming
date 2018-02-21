@@ -2,11 +2,9 @@ package com.example.android.geoquiz;
 
 import android.app.Activity;
 import android.content.Intent;
-import android.media.Image;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -20,6 +18,7 @@ public class QuizActivity extends AppCompatActivity {
   private static final String QUESTIONS_ANSWERED_KEY = "Question_Answered_Key";
   private static final String ANSWER_KEY = "Answer_key";
   private static final String SCORE_KEY = "Score_key";
+  private static final String CHEATER_KEY = "Cheater_key";
   private static final int REQUEST_CHEAT_CODE = 0;
 
   private Button mTrueButton;
@@ -39,6 +38,7 @@ public class QuizActivity extends AppCompatActivity {
   };
 
   private boolean[] mQuestionsAnswered = new boolean[mQuestionBank.length];
+  private boolean[] mQuestionsCheated = new boolean[mQuestionBank.length];
 
   private int mCurrentIndex = 0;
   private double mScore = 0;
@@ -54,6 +54,7 @@ public class QuizActivity extends AppCompatActivity {
     if (savedInstanceState != null) {
       mCurrentIndex = savedInstanceState.getInt(KEY_INDEX);
       mQuestionsAnswered = savedInstanceState.getBooleanArray(QUESTIONS_ANSWERED_KEY);
+      mQuestionsCheated = savedInstanceState.getBooleanArray(CHEATER_KEY);
       mScore = savedInstanceState.getDouble(SCORE_KEY);
       mAnswer = savedInstanceState.getDouble(ANSWER_KEY);
     }
@@ -63,7 +64,6 @@ public class QuizActivity extends AppCompatActivity {
       @Override
       public void onClick(View view) {
         mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
-        mIsCheater = false;
         updateQuestion();
       }
     });
@@ -103,7 +103,6 @@ public class QuizActivity extends AppCompatActivity {
       @Override
       public void onClick(View view) {
         mCurrentIndex = (mCurrentIndex + 1) % mQuestionBank.length;
-        mIsCheater = false;
         updateQuestion();
       }
     });
@@ -131,6 +130,7 @@ public class QuizActivity extends AppCompatActivity {
         return;
       }
       mIsCheater = CheatActivity.wasAnswerShown(data);
+      mQuestionsCheated[mCurrentIndex] = mIsCheater;
     }
   }
 
@@ -149,6 +149,8 @@ public class QuizActivity extends AppCompatActivity {
     boolean isAnswerTrue = mQuestionBank[mCurrentIndex].isAnswerTrue();
 
     int messageResId = 0;
+
+    mIsCheater = mQuestionsCheated[mCurrentIndex];
 
     if (mIsCheater) {
       messageResId = R.string.judgement_toast;
@@ -180,6 +182,7 @@ public class QuizActivity extends AppCompatActivity {
     Log.i(TAG, "onSaveInstanceState: ");
     outState.putInt(KEY_INDEX, mCurrentIndex);
     outState.putBooleanArray(QUESTIONS_ANSWERED_KEY, mQuestionsAnswered);
+    outState.putBooleanArray(CHEATER_KEY, mQuestionsCheated);
     outState.putDouble(ANSWER_KEY, mAnswer);
     outState.putDouble(SCORE_KEY, mScore);
   }
