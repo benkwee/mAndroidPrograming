@@ -1,22 +1,30 @@
 package com.example.android.geoquiz;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.widget.Button;
 import android.widget.TextView;
+
+import org.w3c.dom.Text;
 
 public class CheatActivity extends AppCompatActivity {
 
   private static final String EXTRA_ANSWER_IS_TRUE = "com.bignerdranch.android.geoquiz.answer_is_true";
   private static final String EXTRA_ANSWER_SHOW = "com.bignerdranch.android.geoquiz.answer_shown";
   private static final String ANSWER_SHOWN_KEY = "ANSWER_SHOWN";
+  private static final String API_KEY = "API";
 
   private boolean mAnswerIsTrue;
 
   private TextView mAnswerTextView;
+  private TextView mAPIVersionTextView;
   private Button mShowAnswerButton;
 
   @Override
@@ -27,10 +35,14 @@ public class CheatActivity extends AppCompatActivity {
     mAnswerIsTrue = getIntent().getBooleanExtra(EXTRA_ANSWER_IS_TRUE, false);
 
     mAnswerTextView = (TextView) findViewById(R.id.answer_text_view);
+    mAPIVersionTextView = (TextView) findViewById(R.id.api_version_text_view);
+
+    String api_version = String.valueOf(Build.VERSION.SDK_INT);
+    mAPIVersionTextView.setText("API Level " + api_version);
 
     if (savedInstanceState != null) {
-      String text = savedInstanceState.getString(ANSWER_SHOWN_KEY);
-      mAnswerTextView.setText(text);
+      mAnswerTextView.setText(savedInstanceState.getString(ANSWER_SHOWN_KEY));
+      mAPIVersionTextView.setText(savedInstanceState.getString(API_KEY));
       setAnwserShownResult(true);
     }
 
@@ -44,6 +56,24 @@ public class CheatActivity extends AppCompatActivity {
           mAnswerTextView.setText(R.string.false_button);
         }
         setAnwserShownResult(true);
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+          int cx = mShowAnswerButton.getWidth();
+          int cy = mShowAnswerButton.getHeight();
+          float radius = mShowAnswerButton.getWidth();
+          Animator anim = ViewAnimationUtils
+              .createCircularReveal(mShowAnswerButton, cx, cy, radius, 0);
+          anim.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+              super.onAnimationEnd(animation);
+              mShowAnswerButton.setVisibility(View.INVISIBLE);
+            }
+          });
+          anim.start();
+        } else {
+          mShowAnswerButton.setVisibility(View.INVISIBLE);
+        }
       }
     });
   }
@@ -62,6 +92,7 @@ public class CheatActivity extends AppCompatActivity {
   protected void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
     outState.putString(ANSWER_SHOWN_KEY, mAnswerTextView.getText().toString());
+    outState.putString(API_KEY, mAPIVersionTextView.getText().toString());
 
   }
 

@@ -41,6 +41,7 @@ public class QuizActivity extends AppCompatActivity {
   private boolean[] mQuestionsCheated = new boolean[mQuestionBank.length];
 
   private int mCurrentIndex = 0;
+  private int mMaxCheatAllowed = 3;
   private double mScore = 0;
   private double mAnswer = 0;
   private boolean mIsCheater;
@@ -107,7 +108,7 @@ public class QuizActivity extends AppCompatActivity {
       }
     });
 
-    mCheatButton = (Button)findViewById(R.id.cheat_button);
+    mCheatButton = (Button) findViewById(R.id.cheat_button);
     mCheatButton.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
@@ -176,6 +177,16 @@ public class QuizActivity extends AppCompatActivity {
     }
   }
 
+  private boolean maxCheated() {
+    int count = 0;
+    for (int i = 0; i < mQuestionsCheated.length; i++) {
+      if (mQuestionsCheated[i]){
+        count++;
+      }
+    }
+    return count == mMaxCheatAllowed;
+  }
+
   @Override
   protected void onSaveInstanceState(Bundle outState) {
     super.onSaveInstanceState(outState);
@@ -191,6 +202,9 @@ public class QuizActivity extends AppCompatActivity {
   protected void onStart() {
     super.onStart();
     Log.d(TAG, "onStart: ");
+    if (maxCheated()) {
+      mCheatButton.setVisibility(View.INVISIBLE);
+    }
   }
 
   @Override
